@@ -2,7 +2,7 @@
 // @name         Eorzea Collection to Glamourer
 // @namespace    GlamJS
 // @icon         https://www.google.com/s2/favicons?domain_url=https://store.finalfantasyxiv.com/ffxivstore/en-gb/
-// @version      0.1.0
+// @version      0.1.1
 // @description  Exports glamour designs from Eorzea Collection ready to be imported into Glamourer.
 // @author       aza
 // @match        https://ffxiv.eorzeacollection.com/glamour/*
@@ -292,7 +292,7 @@
 
         btn.innerHTML = `
             <span class="icon"><i class="fas fa-clipboard"></i></span>
-            <span>Copy to Glamourer</span>
+            <span>Copy for Glamourer</span>
         `;
 
         btn.onmouseenter = () => { btn.style.transform = 'scale(1.05)'; };

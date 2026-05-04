@@ -13,7 +13,7 @@ To use GlamJS, you must have a userscript manager extension installed in your br
 ## Installation
 
 1.  Ensure you have one of the extensions listed in the [Requirements](#requirements) section installed.
-2.  Click [here](https://raw.githubusercontent.com/azaerina/glamjs/refs/heads/main/glamjs.meta.js) to install the script.
+2.  Click [here](https://raw.githubusercontent.com/azaerina/glamjs/master/glamjs.user.js) to install the script.
 3.  Your userscript manager will automatically open a new tab asking for confirmation. Click **Install**.
 
 ## Usage

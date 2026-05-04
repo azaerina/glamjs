@@ -22,7 +22,9 @@ To use GlamJS, you must have a userscript manager extension installed in your br
 2. Click on the button.
 3. Go to Glamourer and click either on `Try to import a design from your clipboard.` or directly on the `Try to apply a design from your clipboard.` buttons.
 
-![Usage](https://raw.githubusercontent.com/azaerina/glamjs/refs/heads/main/img/usage.png)
+<p align="center">
+  <img src="https://github.com/azaerina/glamjs/blob/main/img/usage.png?raw=true" alt="Usage"/>
+</p>
 
 ## License
 

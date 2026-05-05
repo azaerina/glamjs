@@ -2,7 +2,7 @@
 // @name         Eorzea Collection to Glamourer
 // @namespace    GlamJS
 // @icon         https://www.google.com/s2/favicons?domain_url=https://store.finalfantasyxiv.com/ffxivstore/en-gb/
-// @version      0.2.1
+// @version      0.3.0
 // @description  Exports glamour designs from Eorzea Collection ready to be imported into Glamourer.
 // @author       aza
 // @match        https://ffxiv.eorzeacollection.com/glamour/*
@@ -18,6 +18,7 @@
 (function() {
     'use strict';
 
+    // Main class
     const GlamourerConverter = (function () {
         // Cache key to cache XIVAPI ID lookups
         const CACHE_KEY = 'glamjs_xivapi_cache';
@@ -153,12 +154,13 @@
             }
         };
 
+        // Compresses the JSON string with gzip and prepends the version
         function compressWithVersion(jsonString, version) {
             var header = [0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
             var utf8b = new TextEncoder().encode(jsonString);
             var payload2 = pako.deflateRaw(utf8b, { level: 9, flush: 2 });
             var result2 = new Uint8Array(1 + header.length + payload2.length);
-            
+
             result2[0] = version;
             result2.set(header, 1);
             result2.set(payload2, 1 + header.length);
@@ -166,10 +168,12 @@
             return result2;
         }
 
+        // Converts byte array to Base64 string
         function bytesToBase64(bytes) {
             return btoa(Array.from(bytes, b => String.fromCharCode(b)).join(''));
         }
 
+        // Converts the design object to a Base64 string ready for import
         function toBase64(jObject) {
             var data = (jObject && jObject.data) ? jObject.data : jObject;
             var version = (jObject && jObject.version && typeof jObject.version === 'number') ? jObject.version : VERSION;
@@ -185,6 +189,7 @@
             return bytesToBase64(compressWithVersion(JSON.stringify(cleanData), version));
         }
 
+        // Gets the cache data from localStorage
         function getCache() {
             if (memCache) return memCache;
 
@@ -197,6 +202,7 @@
             return memCache;
         }
 
+        // Retrieves the idtem ID from XIVAPI
         async function fetchIdFromXIVAPI(itemName, itemLang) {
             if (!itemName || itemName === "None") return 0;
 
@@ -223,6 +229,7 @@
             }
         }
 
+        // Parses the glamour page to obtain the gear data and returns a JSON object
         async function fromEorzeaCollection(root) {
             var design = JSON.parse(JSON.stringify(EMPTY_DESIGN));
             design.data.Identifier = crypto.randomUUID();
@@ -236,15 +243,23 @@
                 var slotLabel = row.querySelector('.gear-icon-box-slot-name');
                 if (!slotLabel) { console.debug('[GlamJS] Slot label not found for row:', row); return null; }
 
+                // Glamourer slot
                 var rawSlot = slotLabel.textContent.trim().toUpperCase();
                 var targetSlot = slotMap[rawSlot];
                 if (rawSlot === 'RING') { targetSlot = (ringCount === 0) ? 'LFinger' : 'RFinger'; ringCount++; }
                 if (!targetSlot) { console.debug('[GlamJS] Target slot not found for row:', row); return null; }
 
+                // Item title
+                var itemTitle = row.querySelector('.list-item-title');
+                if (!itemTitle) { console.debug('[GlamJS] Item title not found for row:', row); return null; }
+
+                // Item link
+                var itemLink = itemTitle.querySelector('.eorzeadb_link');
+                if (!itemLink) { console.debug('[GlamJS] Item link not found for row:', row); }
+
                 // Item data
-                var itemLink = row.querySelector('.list-item-title .eorzeadb_link');
-                var itemName = itemLink ? itemLink.textContent.trim() : "";
-                var itemLang = langMap[new URL(itemLink.href).hostname.split('.')[0]] || 'en';
+                var itemName = itemLink ? itemLink.textContent.trim() : (itemTitle.textContent.trim() || '');
+                var itemLang = itemLink ? (langMap[new URL(itemLink.href).hostname.split('.')[0]] || 'en') : 'en';
                 var itemId = await fetchIdFromXIVAPI(itemName, itemLang);
                 if (!itemId) { console.debug(`[GlamJS] Item ID not found for "${itemName}" (slot: ${targetSlot})`); return null; }
 
@@ -282,8 +297,10 @@
         return { toBase64: toBase64, fromEorzeaCollection: fromEorzeaCollection };
     })();
 
+    // Creates the copy button and appends it to the page
     function createCopyButton() {
-        if (document.getElementById('glamourer-copy-btn')) return;
+        const existing = document.getElementById('glamourer-copy-btn');
+        if (existing && existing.isConnected) return;
 
         const btn = document.createElement('button');
         btn.id = 'glamourer-copy-btn';
@@ -301,38 +318,6 @@
             <span class="icon"><i class="fas fa-clipboard"></i></span>
             <span>Copy for Glamourer</span>
         `;
-
-        btn.onmouseenter = () => { btn.style.transform = 'scale(1.05)'; };
-        btn.onmouseleave = () => { btn.style.transform = 'scale(1)'; };
-
-        btn.onclick = async function() {
-            try {
-                const design = await GlamourerConverter.fromEorzeaCollection(document);
-                console.debug('[GlamJS] Extracted design from Eorzea Collection:', design);
-
-                const titleEl = document.querySelector('h1.title');
-                if (titleEl) design.data.Name = titleEl.textContent.trim();
-
-                const b64 = GlamourerConverter.toBase64(design);
-                console.debug('[GlamJS] Converted design to Base64:', b64);
-
-                GM.setClipboard(b64);
-
-                const originalLabel = btn.querySelector('span:last-child').textContent;
-                btn.querySelector('span:last-child').textContent = 'Copied to Clipboard!';
-                btn.classList.replace('is-primary', 'is-success');
-
-                setTimeout(() => {
-                    btn.querySelector('span:last-child').textContent = originalLabel;
-                    btn.classList.replace('is-success', 'is-primary');
-                    btn.style.backgroundColor = '#fb4b4e';
-                }, 2000);
-
-            } catch (err) {
-                console.error('[GlamJS] Error:', err);
-                alert('Failed to convert outfit: ' + err.message);
-            }
-        };
 
         // We'll try to append the button between the images and description first
         const container = document.querySelector('#js-app > div > div.section.container.pt-2.pb-0');
@@ -363,14 +348,118 @@
         btn.style.zIndex = '99999';
 
         document.body.appendChild(btn);
-        
+
         console.debug('[GlamJS] Inserted copy button into body as fallback');
     }
 
+    // Starts all the events for the button. In this case mouseover, mouseout and click
+    function initEvents() {
+        document.addEventListener('mouseover', function(e) {
+            if (e.target.closest('#glamourer-copy-btn')) {
+                e.target.closest('#glamourer-copy-btn').style.transform = 'scale(1.05)';
+            }
+        });
+
+        document.addEventListener('mouseout', function(e) {
+            if (e.target.closest('#glamourer-copy-btn')) {
+                e.target.closest('#glamourer-copy-btn').style.transform = 'scale(1)';
+            }
+        });
+
+        document.addEventListener('click', async function(e) {
+            const btn = e.target.closest('#glamourer-copy-btn');
+            if (!btn) return;
+
+            const labelSpan = btn.querySelector('span:last-child');
+            const originalLabel = labelSpan.textContent;
+
+            if (!itemsAreReady()) {
+                labelSpan.textContent = 'Loading...';
+                btn.disabled = true;
+
+                const ready = await new Promise(resolve => {
+                    const deadline = Date.now() + 15000;
+                    const poll = setInterval(() => {
+                        if (itemsAreReady() || Date.now() > deadline) {
+                            clearInterval(poll);
+                            resolve(itemsAreReady());
+                        }
+                    }, 300);
+                });
+
+                btn.disabled = false;
+
+                if (!ready) {
+                    labelSpan.textContent = 'Error | Try again...';
+                    setTimeout(() => { labelSpan.textContent = originalLabel; }, 3000);
+                    return;
+                }
+
+                labelSpan.textContent = originalLabel;
+            }
+
+            try {
+                const design = await GlamourerConverter.fromEorzeaCollection(document);
+                console.debug('[GlamJS] Extracted design from Eorzea Collection:', design);
+
+                const titleEl = document.querySelector('h1.title');
+                if (titleEl) design.data.Name = titleEl.textContent.trim();
+
+                const b64 = GlamourerConverter.toBase64(design);
+                console.debug('[GlamJS] Converted design to Base64:', b64);
+
+                GM.setClipboard(b64);
+
+                const originalLabel = btn.querySelector('span:last-child').textContent;
+                btn.querySelector('span:last-child').textContent = 'Copied to Clipboard!';
+                btn.classList.replace('is-primary', 'is-success');
+
+                setTimeout(() => {
+                    btn.querySelector('span:last-child').textContent = originalLabel;
+                    btn.classList.replace('is-success', 'is-primary');
+                    btn.style.backgroundColor = '#fb4b4e';
+                }, 2000);
+
+            } catch (err) {
+                console.error('[GlamJS] Error:', err);
+                alert('Failed to convert outfit: ' + err.message);
+            }
+        });
+    }
+
+    // Checks if the items are ready by verifying if at least one item row has a title
+    function itemsAreReady() {
+        const rows = document.querySelectorAll('.list.box');
+        if (!rows.length) return false;
+
+        return Array.from(rows).some(row => {
+            const title = row.querySelector('.list-item-title');
+
+            return title && title.textContent.trim().length > 0;
+        });
+    }
+
+    // Ensures the items are ready before doing anythin
+    function waitForItems() {
+        const observer = new MutationObserver(function() {
+            if (itemsAreReady()) {
+                createCopyButton();
+            }
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        if (itemsAreReady()) {
+            createCopyButton();
+        }
+    }
+
+    initEvents();
+
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', createCopyButton);
+        document.addEventListener('DOMContentLoaded', waitForItems);
     } else {
-        createCopyButton();
+        waitForItems();
     }
 
 })();

@@ -2,7 +2,7 @@
 // @name         Eorzea Collection to Glamourer
 // @namespace    GlamJS
 // @icon         https://www.google.com/s2/favicons?domain_url=https://store.finalfantasyxiv.com/ffxivstore/en-gb/
-// @version      0.1.1
+// @version      0.2.0
 // @description  Exports glamour designs from Eorzea Collection ready to be imported into Glamourer.
 // @author       aza
 // @match        https://ffxiv.eorzeacollection.com/glamour/*
@@ -27,6 +27,9 @@
 
         // Glamour version
         const VERSION = 6;
+
+        // Languages mapping
+        const langMap = { 'na': 'en', 'eu': 'en', 'de': 'de', 'fr': 'fr', 'jp': 'ja' };
 
         // Dye map with names and IDs
         const dyeMap = {
@@ -194,7 +197,7 @@
             return memCache;
         }
 
-        async function fetchIdFromXIVAPI(itemName) {
+        async function fetchIdFromXIVAPI(itemName, itemLang) {
             if (!itemName || itemName === "None") return 0;
 
             const cache = getCache();
@@ -202,7 +205,7 @@
             if (cache[cacheKey]) return cache[cacheKey];
 
             try {
-                const url = `https://v2.xivapi.com/api/search?sheets=Item&fields=Name&query=Name="${encodeURIComponent(itemName)}"`;
+                const url = `https://v2.xivapi.com/api/search?sheets=Item&language=${itemLang}&fields=Name&query=Name="${encodeURIComponent(itemName)}"`;
                 const response = await fetch(url);
                 const data = await response.json();
                 const match = data.results.find(r => r.fields.Name.toLowerCase() === itemName.toLowerCase());
@@ -229,6 +232,7 @@
             var items = root.querySelectorAll('.list.box');
 
             const promises = Array.from(items).map(async (row) => {
+                // Slot data
                 var slotLabel = row.querySelector('.gear-icon-box-slot-name');
                 if (!slotLabel) return null;
 
@@ -237,11 +241,13 @@
                 if (rawSlot === 'RING') { targetSlot = (ringCount === 0) ? 'LFinger' : 'RFinger'; ringCount++; }
                 if (!targetSlot) return null;
 
-                var idAnchor = row.querySelector('.list-item-title .eorzeadb_link');
-                var itemName = idAnchor ? idAnchor.textContent.trim() : "";
+                // Item data
+                var itemLink = row.querySelector('.list-item-title .eorzeadb_link');
+                var itemName = itemLink ? itemLink.textContent.trim() : "";
+                var itemLang = langMap[new URL(itemLink.href).hostname.split('.')[0]] || 'en';
+                var itemId = await fetchIdFromXIVAPI(itemName, itemLang);
 
-                var xivId = await fetchIdFromXIVAPI(itemName);
-
+                // Dyes data
                 var dyeTags = row.querySelectorAll('.list-item-description .tag');
                 var stains = [0, 0];
                 var dyeIdx = 0;
@@ -255,7 +261,7 @@
                     }
                 });
 
-                return { targetSlot, itemId: xivId, stains };
+                return { targetSlot, itemId: itemId, stains };
             });
 
             const results = await Promise.all(promises);
@@ -327,6 +333,7 @@
             }
         };
 
+        // We'll try to append the button between the images and description first
         const container = document.querySelector('#js-app > div > div.section.container.pt-2.pb-0');
         if (container) {
             const columns = document.createElement('div');

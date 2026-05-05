@@ -2,12 +2,12 @@
 // @name         Eorzea Collection to Glamourer
 // @namespace    GlamJS
 // @icon         https://www.google.com/s2/favicons?domain_url=https://store.finalfantasyxiv.com/ffxivstore/en-gb/
-// @version      0.2.0
+// @version      0.2.1
 // @description  Exports glamour designs from Eorzea Collection ready to be imported into Glamourer.
 // @author       aza
 // @match        https://ffxiv.eorzeacollection.com/glamour/*
 // @require      https://cdn.jsdelivr.net/npm/pako/dist/pako.min.js
-// @grant        GM_setClipboard
+// @grant        GM.setClipboard
 // @license      Apache-2.0
 // @homepageURL  https://github.com/azaerina/glamjs
 // @supportURL   https://github.com/azaerina/glamjs/issues
@@ -18,7 +18,7 @@
 (function() {
     'use strict';
 
-    const GlamourerConverter = (function (env) {
+    const GlamourerConverter = (function () {
         // Cache key to cache XIVAPI ID lookups
         const CACHE_KEY = 'glamjs_xivapi_cache';
 
@@ -76,22 +76,22 @@
                 "Tags": [],
                 "WriteProtected": false,
                 "Equipment": {
-                    "MainHand": { "ItemId": 1601, "Crest": false, "Apply": false, "ApplyStain": true, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
-                    "OffHand": { "ItemId": 4294966874, "Crest": false, "Apply": false, "ApplyStain": true, "ApplyCrest": true, "Stain": 0, "Stain2": 0 },
-                    "Head": { "ItemId": 4294967164, "Crest": false, "Apply": false, "ApplyStain": true, "ApplyCrest": true, "Stain": 0, "Stain2": 0 },
-                    "Body": { "ItemId": 4294967163, "Crest": false, "Apply": false, "ApplyStain": true, "ApplyCrest": true, "Stain": 0, "Stain2": 0 },
-                    "Hands": { "ItemId": 4294967162, "Crest": false, "Apply": false, "ApplyStain": true, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
-                    "Legs": { "ItemId": 4294967160, "Crest": false, "Apply": false, "ApplyStain": true, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
-                    "Feet": { "ItemId": 4294967159, "Crest": false, "Apply": false, "ApplyStain": true, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
-                    "Ears": { "ItemId": 4294967158, "Crest": false, "Apply": false, "ApplyStain": true, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
-                    "Neck": { "ItemId": 4294967157, "Crest": false, "Apply": false, "ApplyStain": true, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
-                    "Wrists": { "ItemId": 4294967156, "Crest": false, "Apply": false, "ApplyStain": true, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
-                    "RFinger": { "ItemId": 4294967155, "Crest": false, "Apply": false, "ApplyStain": true, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
-                    "LFinger": { "ItemId": 4294967155, "Crest": false, "Apply": false, "ApplyStain": true, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
+                    "MainHand": { "ItemId": 1601, "Crest": false, "Apply": false, "ApplyStain": false, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
+                    "OffHand": { "ItemId": 4294966874, "Crest": false, "Apply": false, "ApplyStain": false, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
+                    "Head": { "ItemId": 4294967164, "Crest": false, "Apply": false, "ApplyStain": false, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
+                    "Body": { "ItemId": 4294967163, "Crest": false, "Apply": false, "ApplyStain": false, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
+                    "Hands": { "ItemId": 4294967162, "Crest": false, "Apply": false, "ApplyStain": false, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
+                    "Legs": { "ItemId": 4294967160, "Crest": false, "Apply": false, "ApplyStain": false, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
+                    "Feet": { "ItemId": 4294967159, "Crest": false, "Apply": false, "ApplyStain": false, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
+                    "Ears": { "ItemId": 4294967158, "Crest": false, "Apply": false, "ApplyStain": false, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
+                    "Neck": { "ItemId": 4294967157, "Crest": false, "Apply": false, "ApplyStain": false, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
+                    "Wrists": { "ItemId": 4294967156, "Crest": false, "Apply": false, "ApplyStain": false, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
+                    "RFinger": { "ItemId": 4294967155, "Crest": false, "Apply": false, "ApplyStain": false, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
+                    "LFinger": { "ItemId": 4294967155, "Crest": false, "Apply": false, "ApplyStain": false, "ApplyCrest": false, "Stain": 0, "Stain2": 0 },
                     "Hat": { "Show": true, "Apply": true },
                     "VieraEars": { "Show": true, "Apply": true },
-                    "Visor": { "IsToggled": false, "Apply": true },
-                    "Weapon": { "Show": false, "Apply": true }
+                    "Visor": { "IsToggled": false, "Apply": false },
+                    "Weapon": { "Show": false, "Apply": false }
                 },
                 "Bonus": { "Glasses": { "BonusId": 0, "Apply": false } },
                 "Customize": {
@@ -234,18 +234,19 @@
             const promises = Array.from(items).map(async (row) => {
                 // Slot data
                 var slotLabel = row.querySelector('.gear-icon-box-slot-name');
-                if (!slotLabel) return null;
+                if (!slotLabel) { console.debug('[GlamJS] Slot label not found for row:', row); return null; }
 
                 var rawSlot = slotLabel.textContent.trim().toUpperCase();
                 var targetSlot = slotMap[rawSlot];
                 if (rawSlot === 'RING') { targetSlot = (ringCount === 0) ? 'LFinger' : 'RFinger'; ringCount++; }
-                if (!targetSlot) return null;
+                if (!targetSlot) { console.debug('[GlamJS] Target slot not found for row:', row); return null; }
 
                 // Item data
                 var itemLink = row.querySelector('.list-item-title .eorzeadb_link');
                 var itemName = itemLink ? itemLink.textContent.trim() : "";
                 var itemLang = langMap[new URL(itemLink.href).hostname.split('.')[0]] || 'en';
                 var itemId = await fetchIdFromXIVAPI(itemName, itemLang);
+                if (!itemId) { console.debug(`[GlamJS] Item ID not found for "${itemName}" (slot: ${targetSlot})`); return null; }
 
                 // Dyes data
                 var dyeTags = row.querySelectorAll('.list-item-description .tag');
@@ -315,7 +316,7 @@
                 const b64 = GlamourerConverter.toBase64(design);
                 console.debug('[GlamJS] Converted design to Base64:', b64);
 
-                GM_setClipboard(b64);
+                GM.setClipboard(b64);
 
                 const originalLabel = btn.querySelector('span:last-child').textContent;
                 btn.querySelector('span:last-child').textContent = 'Copied to Clipboard!';
@@ -350,6 +351,8 @@
             columns.appendChild(column);
             container.appendChild(columns);
 
+            console.debug('[GlamJS] Inserted copy button into container');
+
             return;
         }
 
@@ -360,6 +363,8 @@
         btn.style.zIndex = '99999';
 
         document.body.appendChild(btn);
+        
+        console.debug('[GlamJS] Inserted copy button into body as fallback');
     }
 
     if (document.readyState === 'loading') {
